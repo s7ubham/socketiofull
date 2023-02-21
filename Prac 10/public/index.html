@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="chat">
+  <ul id="messages"></ul>
+  <form id="message-form">
+    <input id="text-field" autocomplete="off" />
+    <input id="sub-button"type="submit" value="Send">
+  </form>
+</div>
+<script>
+const randomStr = (n=10) => [...Array(n)]
+  .map(e => String.fromCharCode(~~(Math.random() * 26) + 97))
+  .join("")
+;
+const username = prompt("what's your nickname?") || "Guest "+randomStr();
+const socket = io.connect();
+const messagesContainer = document.querySelector("#messages");
+
+socket.on("connect", () => {
+  socket.emit("register username", username);
+});
+
+socket.on("chat message", ({username, message,time}) => {
+  const p = document.createElement("p");
+  p.textContent = `[${username}] ${message} ${time}`;
+  messagesContainer.appendChild(p);
+});
+
+document.querySelector("#message-form")
+  .addEventListener("submit", e => {
+    e.preventDefault();
+   
+    if (e.target.elements[0].value) {
+      socket.emit("chat message", e.target.elements[0].value);
+      e.target.reset();
+    }
+  })
+;
+</script>
+</body>
+</html>
